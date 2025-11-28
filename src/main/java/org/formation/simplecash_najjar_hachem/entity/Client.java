@@ -4,10 +4,13 @@ package org.formation.simplecash_najjar_hachem.entity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
 @Data
-
+@Getter
+@Setter
 public class Client {
     @Id
     @GeneratedValue
@@ -24,13 +27,13 @@ public class Client {
     private String ville;
     private String telephone;
 
-   /* @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "epargne_id")
     private Epargne monEpargne;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "courant_id")
-    private Courant monCourant;*/
+    private Courant monCourant;
 
 
     public void virement(float montant, Compte source, Compte destination) {
