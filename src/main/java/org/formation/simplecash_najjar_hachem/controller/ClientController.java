@@ -1,11 +1,10 @@
 package org.formation.simplecash_najjar_hachem.controller;
 
 
-import org.formation.simplecash_najjar_hachem.dto.ClientCreateDto;
-import org.formation.simplecash_najjar_hachem.dto.ClientDto;
-import org.formation.simplecash_najjar_hachem.dto.ClientUpdateDto;
+import org.formation.simplecash_najjar_hachem.dto.*;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.formation.simplecash_najjar_hachem.service.ClientService;
@@ -41,9 +40,52 @@ public class ClientController {
                .orElseGet(() -> ResponseEntity.notFound().build());
    }
 
-   @DeleteMapping("{id}")
-    public ResponseEntity<Void> deleteClient(@PathVariable Long id){
-       clientService.deleteClient(id);
-       return ResponseEntity.noContent().build();
-   }
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteClient(@PathVariable Long id) {
+        try {
+            clientService.deleteClient(id);
+            return ResponseEntity.noContent().build();
+        } catch (IllegalStateException e) {
+            // comptes non soldés
+            return ResponseEntity.badRequest().build();
+        } catch (IllegalArgumentException e) {
+            // client introuvable
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/{id}/comptes/courant")
+    public ResponseEntity<CourantDto> createCourantForClient(
+            @PathVariable Long id,
+            @RequestBody @Valid CourantDto dto
+    ) {
+        try {
+            CourantDto created = clientService.createCourantForClient(id, dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IllegalArgumentException e) {
+            // client introuvable
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            // déjà un compte courant
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
+    @PostMapping("/{id}/comptes/epargne")
+    public ResponseEntity<EpargneDto> createEpargneForClient(
+            @PathVariable Long id,
+            @RequestBody @Valid EpargneDto dto
+    ) {
+        try {
+            EpargneDto created = clientService.createEpargneForClient(id, dto);
+            return ResponseEntity.status(HttpStatus.CREATED).body(created);
+        } catch (IllegalArgumentException e) {
+            // client introuvable
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException e) {
+            // déjà un compte épargne
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        }
+    }
+
 }
